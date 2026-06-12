@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import { Button } from "../../components/ui/Button";
 
 export default function DashboardPage() {
   const navigate = useNavigate();
@@ -42,12 +43,14 @@ export default function DashboardPage() {
             </li>
           ))}
         </ul>
-        <button
-          className="w-full bg-black text-white py-2 mb-6 rounded-xl"
+        <Button
+          variant="primary"
+          size="lg"
+          fullWidth
           onClick={handleLogoutClick}
         >
           Logout
-        </button>
+        </Button>
       </div>
     </div>
   );

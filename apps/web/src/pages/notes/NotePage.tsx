@@ -1,4 +1,6 @@
 import { useNavigate } from "react-router-dom";
+import { Button } from "../../components/ui/Button";
+
 interface NotePageProps {
   title: string;
   content: string;
@@ -16,15 +18,12 @@ export default function NotePage({ title, content }: NotePageProps) {
         <textarea className="w-full border rounded-lg px-4 py-2 mb-4">
           {content}
         </textarea>
-        <button className="w-full bg-black text-white py-2 mb-6 rounded-xl">
+        <Button variant="primary" size="lg" fullWidth className="mb-2">
           Save
-        </button>
-        <button
-          className="w-full bg-black text-white py-2 mb-6 rounded-xl"
-          onClick={handleBackClick}
-        >
+        </Button>
+        <Button variant="outline" size="lg" fullWidth onClick={handleBackClick}>
           Back
-        </button>
+        </Button>
       </div>
     </div>
   );

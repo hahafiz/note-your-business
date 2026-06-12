@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import { Button } from "../../components/ui/Button";
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -25,20 +26,19 @@ export default function LoginPage() {
           placeholder="password"
           className="w-full border rounded-lg px-4 py-2 mb-4"
         />
-        <button
-          className="w-full bg-black text-white py-2 mb-6 rounded-xl"
+        <Button
+          variant="primary"
+          size="lg"
+          fullWidth
           onClick={handleLoginClick}
         >
           Login
-        </button>
+        </Button>
         <p className="text-center text-sm mt-4 text-gray-500">
           No account?{" "}
-          <button
-            className="text-black font-medium"
-            onClick={handleRegisterClick}
-          >
+          <Button variant="ghost" size="sm" onClick={handleRegisterClick}>
             Register
-          </button>
+          </Button>
         </p>
       </div>
     </div>
