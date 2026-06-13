@@ -4,13 +4,19 @@ import {
   Route,
   RouterProvider,
   createBrowserRouter,
+  Navigate,
 } from "react-router-dom";
 import LoginPage from "./pages/auth/LoginPage";
 import RegisterPage from "./pages/auth/RegisterPage";
 import DashboardPage from "./pages/dashboard/DashboardPage";
 import NotePage from "./pages/notes/NotePage";
+import ProtectedRoute from "./components/layout/ProtectedRoute";
 
 const router = createBrowserRouter([
+  {
+    path: "/",
+    element: <Navigate to="/login" replace />,
+  },
   {
     path: "/login",
     element: <LoginPage />,
@@ -21,11 +27,11 @@ const router = createBrowserRouter([
   },
   {
     path: "/dashboard",
-    element: <DashboardPage />,
-  },
-  {
-    path: "/dashboard/notes/:id",
-    element: <NotePage title={"Note"} content={"Your Business"} />,
+    element: (
+      <ProtectedRoute>
+        <DashboardPage />
+      </ProtectedRoute>
+    ),
   },
 ]);
 
