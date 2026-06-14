@@ -1,48 +1,56 @@
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "../../components/ui/Button";
 import { apiFetch } from "../../lib/api";
 import { useAuth } from "../../hooks/useAuth";
+import type { Note } from "../../types/note";
 
 export default function DashboardPage() {
   const { user, signOut } = useAuth();
+  const [notes, setNotes] = useState<Note[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
   const navigate = useNavigate();
 
-  const testApi = async () => {
-    try {
-      const data = await apiFetch("/health");
-      console.log("API response:", data);
-      alert("API connected!");
-    } catch (err) {
-      console.error(err);
-      alert("API failed!");
+  useEffect(() => {
+    if (!user) {
+      navigate("/login");
+      return;
     }
-  };
 
-  const handleNoteClick = (id: number) => {
-    navigate(`/dashboard/notes/${id}`);
+    const fetchNotes = async () => {
+      try {
+        const data = (await apiFetch("/notes")) as Note[];
+        setNotes(data);
+        setLoading(false);
+      } catch (err: unknown) {
+        if (err instanceof Error) {
+          setError(err.message);
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchNotes();
+  }, [user, navigate]);
+
+  const handleNoteClick = (id: string) => {
+    navigate(`/notes/${id}`);
   };
 
   const handleNewNoteClick = () => {
     navigate(`/notes/new`);
   };
 
-  const noteLists = [
-    {
-      id: 1,
-      title: "First Note",
-      content: "First Note Content",
-    },
-    {
-      id: 2,
-      title: "Second Note",
-      content: "Second Note Content",
-    },
-    {
-      id: 3,
-      title: "Third Note",
-      content: "Third Note Content",
-    },
-  ];
+  const formatDate = (dateString: string): string => {
+    return new Date(dateString).toLocaleDateString("en-UK", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+    });
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
       <div className="w-full max-w-md flex flex-col items-center p-8 bg-white rounded-xl shadow">
@@ -60,25 +68,40 @@ export default function DashboardPage() {
           New Note
         </Button>
 
-        <ul className="w-full mb-6">
-          {noteLists.map((note) => (
-            <li
-              className="mb-4 pb-4 border-b border-gray-200"
-              onClick={() => handleNoteClick(note.id)}
-            >
-              {note.title}
-            </li>
-          ))}
-        </ul>
+        {loading ? (
+          <p className="text-gray-500 text-sm mb-4 bg-gray-50 p-3 rounded-lg">
+            Loading...
+          </p>
+        ) : error ? (
+          <p className="text-red-500 text-sm mb-4 bg-red-50 p-3 rounded-lg">
+            {error}
+          </p>
+        ) : notes.length === 0 ? (
+          <p className="text-gray-500 text-sm mb-4 bg-gray-50 p-3 rounded-lg">
+            No notes yet. Create your first one!
+          </p>
+        ) : (
+          <ul className="w-full mb-6">
+            {notes.map((note) => (
+              <li
+                key={note.id}
+                className="mb-4 pb-4 border-b border-gray-200 cursor-pointer flex justify-between items-baseline"
+                onClick={() => {
+                  handleNoteClick(note.id);
+                }}
+              >
+                <span className="font-medium">{note.title}</span>
+                <span className="text-gray-400 text-sm">
+                  {formatDate(note.created_at)}
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
 
-        <div className="flex gap-4">
-          <Button variant="primary" size="lg" onClick={testApi}>
-            Test API connection
-          </Button>
-          <Button variant="primary" size="lg" fullWidth onClick={signOut}>
-            Logout
-          </Button>
-        </div>
+        <Button variant="secondary" size="lg" fullWidth onClick={signOut}>
+          Logout
+        </Button>
       </div>
     </div>
   );
