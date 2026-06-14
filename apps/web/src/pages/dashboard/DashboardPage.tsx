@@ -22,6 +22,10 @@ export default function DashboardPage() {
     navigate(`/dashboard/notes/${id}`);
   };
 
+  const handleNewNoteClick = () => {
+    navigate(`/notes/new`);
+  };
+
   const noteLists = [
     {
       id: 1,
@@ -44,6 +48,17 @@ export default function DashboardPage() {
       <div className="w-full max-w-md flex flex-col items-center p-8 bg-white rounded-xl shadow">
         <h1 className="text-2xl font-bold mb-6">Dashboard</h1>
         <p className="text-gray-500 mb-6">Welcome, {user?.email}</p>
+
+        <Button
+          variant="primary"
+          size="lg"
+          fullWidth
+          leftIcon="➕"
+          className="mb-6"
+          onClick={handleNewNoteClick}
+        >
+          New Note
+        </Button>
 
         <ul className="w-full mb-6">
           {noteLists.map((note) => (
