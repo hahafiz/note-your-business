@@ -23,6 +23,29 @@ router.get("/", async (req: Request, res: Response) => {
   res.json(data);
 });
 
+// GET /notes/:id - fetch a specific note
+router.get("/:id", async (req: Request, res: Response) => {
+  const { id } = req.params;
+
+  const { data, error } = await supabase
+    .from("notes")
+    .select("*")
+    .eq("id", id)
+    .eq("owner_id", req.user!.id)
+    .single();
+
+  if (error) {
+    if (error.code === "PGRST116") {
+      res.status(404).json({ error: "Note not found" });
+      return;
+    }
+    res.status(500).json({ error: error.message });
+    return;
+  }
+
+  res.json(data);
+});
+
 // POST /notes - create new note
 router.post("/", async (req: Request, res: Response) => {
   const { title, content } = req.body;
