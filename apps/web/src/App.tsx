@@ -42,6 +42,14 @@ const router = createBrowserRouter([
       </ProtectedRoute>
     ),
   },
+  {
+    path: "/notes/:id",
+    element: (
+      <ProtectedRoute>
+        <NotePage />
+      </ProtectedRoute>
+    ),
+  },
 ]);
 
 export default function App() {
