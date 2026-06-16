@@ -10,6 +10,7 @@ import LoginPage from "./pages/auth/LoginPage";
 import RegisterPage from "./pages/auth/RegisterPage";
 import DashboardPage from "./pages/dashboard/DashboardPage";
 import NotePage from "./pages/notes/NotePage";
+import EditNotePage from "./pages/notes/EditNotePage";
 import CreateNotePage from "./pages/notes/CreateNotePage";
 import ProtectedRoute from "./components/layout/ProtectedRoute";
 
@@ -46,7 +47,7 @@ const router = createBrowserRouter([
     path: "/notes/:id",
     element: (
       <ProtectedRoute>
-        <NotePage />
+        <EditNotePage />
       </ProtectedRoute>
     ),
   },

@@ -16,7 +16,7 @@ export default function CreateNotePage() {
   const handleSave = async () => {
     // basic validation - if the title is empty, don't save
     if (!title.trim()) {
-      setError("Please aedd a title before saving");
+      setError("Please add a title before saving");
       return;
     }
 
