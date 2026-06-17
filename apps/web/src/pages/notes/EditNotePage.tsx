@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "../../components/ui/Button";
 import { apiFetch } from "../../lib/api";
@@ -11,9 +11,14 @@ export default function EditNotePage() {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [saving, setSaving] = useState(false);
+  const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved">(
+    "idle",
+  );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const hasEdited = useRef(false);
 
+  // fetch the note
   useEffect(() => {
     if (!id) return;
 
@@ -33,6 +38,34 @@ export default function EditNotePage() {
 
     fetchNote();
   }, [id]);
+
+  // debounce the save
+  useEffect(() => {
+    const timer = setTimeout(async () => {
+      if (loading || !hasEdited.current || !title.trim()) return;
+
+      try {
+        setSaveStatus("saving");
+        await apiFetch(`/notes/${id}`, {
+          method: "PATCH",
+          body: JSON.stringify({
+            title: title.trim(),
+            content: content.trim(),
+          }),
+        });
+        setSaveStatus("saved");
+        setTimeout(() => {
+          setSaveStatus("idle");
+        }, 5000);
+      } catch (err: unknown) {
+        if (err instanceof Error) {
+          setError(err.message);
+        }
+      }
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  }, [title, content, id, loading]);
 
   const handleSave = async () => {
     if (!title.trim()) {
@@ -104,16 +137,31 @@ export default function EditNotePage() {
               placeholder="Title"
               className="w-full border rounded-lg px-4 py-2 mb-4"
               value={title}
-              onChange={(e) => setTitle(e.target.value)}
+              onChange={(e) => {
+                hasEdited.current = true;
+                setTitle(e.target.value);
+              }}
             />
             <textarea
               placeholder="Start writing..."
               value={content}
-              onChange={(e) => setContent(e.target.value)}
+              onChange={(e) => {
+                hasEdited.current = true;
+                setContent(e.target.value);
+              }}
               rows={20}
               className="w-full border rounded-lg px-4 py-2 mb-4"
             ></textarea>
           </div>
+        )}
+
+        {saveStatus === "saving" && (
+          <span className="text-xs text-gray-400">Saving...</span>
+        )}
+        {saveStatus === "saved" && (
+          <span className="text-xs text-green-600 mb-4 p-2 rounded bg-green-100">
+            Saved
+          </span>
         )}
 
         <Button
