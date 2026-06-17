@@ -64,6 +64,27 @@ router.post("/", async (req: Request, res: Response) => {
   res.status(201).json(data);
 });
 
+// PATCH /notes/:id - update a note
+router.patch("/:id", async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const { title, content } = req.body;
+
+  const { data, error } = await supabase
+    .from("notes")
+    .update({ title, content, updated_at: new Date().toISOString() })
+    .eq("id", id)
+    .eq("owner_id", req.user!.id) // ensure the note belongs to the logged-in user
+    .select()
+    .single();
+
+  if (error) {
+    res.status(500).json({ error: error.message });
+    return;
+  }
+
+  res.json(data);
+});
+
 // DELETE /notes/:id - delete a note
 router.delete("/:id", async (req: Request, res: Response) => {
   const { id } = req.params;
