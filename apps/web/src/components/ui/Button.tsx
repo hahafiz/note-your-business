@@ -38,17 +38,17 @@ const Button = ({
 
   const variantClasses: Record<ButtonVariant, string> = {
     primary:
-      "font-normal bg-black hover:bg-gray-800 text-white focus:ring-black rounded-xl",
+      "font-normal bg-black rounded-xl hover:bg-gray-800 text-white focus:ring-black",
     secondary:
-      "font-normal bg-gray-200 hover:bg-gray-300 text-gray-900 focus:ring-gray-300",
+      "font-normal bg-gray-200 rounded-xl hover:bg-gray-300 text-gray-900 focus:ring-gray-300",
     success:
-      "font-normal bg-green-600 hover:bg-green-700 text-white focus:ring-green-500",
+      "font-normal bg-green-600 rounded-xl hover:bg-green-700 text-white focus:ring-green-500",
     danger:
-      "font-normal bg-red-600 hover:bg-red-700 text-white focus:ring-red-500",
+      "font-normal bg-red-600 rounded-xl hover:bg-red-700 text-white focus:ring-red-500",
     outline:
-      "font-normal bg-transparent border border-gray-300 text-gray-700 hover:bg-gray-50 focus:ring-gray-500 rounded-xl",
+      "font-normal bg-transparent rounded-xl border border-gray-300 text-gray-700 hover:bg-gray-50 focus:ring-gray-500 rounded-xl",
     ghost:
-      "font-medium bg-transparent hover:bg-gray-100 text-gray-700 focus:ring-gray-500",
+      "font-medium bg-transparent rounded-xl hover:bg-gray-100 text-gray-700 focus:ring-gray-500",
   };
 
   const sizeClasses: Record<ButtonSize, string> = {

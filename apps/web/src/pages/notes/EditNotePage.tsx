@@ -63,6 +63,24 @@ export default function EditNotePage() {
     }
   };
 
+  const handleDelete = async () => {
+    // TODO: replace with proper confirmation
+    if (window.confirm("Delete note?")) {
+      try {
+        await apiFetch(`/notes/${id}`, {
+          method: "DELETE",
+        });
+
+        // note deleted - return to dashboard
+        navigate("/dashboard");
+      } catch (err: unknown) {
+        if (err instanceof Error) {
+          setError(err.message);
+        }
+      }
+    }
+  };
+
   const handleCancelClick = () => {
     navigate("/dashboard");
   };
@@ -107,6 +125,15 @@ export default function EditNotePage() {
           onClick={handleSave}
         >
           {saving ? "Saving..." : "Save"}
+        </Button>
+        <Button
+          variant="danger"
+          size="lg"
+          fullWidth
+          className="mb-2"
+          onClick={handleDelete}
+        >
+          Delete
         </Button>
         <Button
           variant="ghost"
