@@ -1,8 +1,10 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "../../components/ui/Button";
 import { apiFetch } from "../../lib/api";
 import type { Note } from "../../types/note";
+import * as Y from "yjs";
+import { WebsocketProvider } from "y-websocket";
 
 export default function EditNotePage() {
   const navigate = useNavigate();
@@ -17,6 +19,22 @@ export default function EditNotePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const hasEdited = useRef(false);
+
+  // create doc one (survives re-renders)
+  const doc = useMemo(() => new Y.Doc(), []);
+
+  // create provider inside useEffect, so cleanup can run on unmount
+  useEffect(() => {
+    if (!id) return;
+
+    const wsProvider = new WebsocketProvider("ws://localhost:1234", id, doc);
+
+    // cleanup when unmounts
+    return () => {
+      wsProvider.disconnect();
+      doc.destroy();
+    };
+  }, [id, doc]);
 
   // fetch the note
   useEffect(() => {
