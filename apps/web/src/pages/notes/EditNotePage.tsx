@@ -5,6 +5,9 @@ import { apiFetch } from "../../lib/api";
 import type { Note } from "../../types/note";
 import * as Y from "yjs";
 import { WebsocketProvider } from "y-websocket";
+import { useEditor, EditorContent } from "@tiptap/react";
+import StarterKit from "@tiptap/starter-kit";
+import Collaboration from "@tiptap/extension-collaboration";
 
 export default function EditNotePage() {
   const navigate = useNavigate();
@@ -19,6 +22,7 @@ export default function EditNotePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const hasEdited = useRef(false);
+  const hasInitialized = useRef(false);
 
   // create doc one (survives re-renders)
   const doc = useMemo(() => new Y.Doc(), []);
@@ -32,9 +36,22 @@ export default function EditNotePage() {
     // cleanup when unmounts
     return () => {
       wsProvider.disconnect();
-      doc.destroy();
     };
   }, [id, doc]);
+
+  const editor = useEditor({
+    editorProps: {
+      attributes: {
+        class: "w-full border rounded-lg px-4 py-2 mb-4 min-h-[400px]",
+      },
+    },
+    extensions: [
+      StarterKit.configure({
+        history: false,
+      }),
+      Collaboration.configure({ document: doc }),
+    ],
+  });
 
   // fetch the note
   useEffect(() => {
@@ -57,18 +74,33 @@ export default function EditNotePage() {
     fetchNote();
   }, [id]);
 
+  useEffect(() => {
+    if (!hasInitialized.current) {
+      if (!editor) return;
+      if (!content) return;
+
+      editor.commands.setContent(content);
+      hasInitialized.current = true;
+    }
+  }, [editor, content]);
+
   // debounce the save
   useEffect(() => {
     const timer = setTimeout(async () => {
-      if (loading || !hasEdited.current || !title.trim()) return;
+      if (loading || !hasEdited.current || !title.trim() || !editor) return;
+
+      const jsonContent = editor.getJSON();
 
       try {
         setSaveStatus("saving");
         await apiFetch(`/notes/${id}`, {
           method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
           body: JSON.stringify({
             title: title.trim(),
-            content: content.trim(),
+            content: jsonContent,
           }),
         });
         setSaveStatus("saved");
@@ -83,13 +115,16 @@ export default function EditNotePage() {
     }, 1000);
 
     return () => clearTimeout(timer);
-  }, [title, content, id, loading]);
+  }, [title, content, id, loading, editor]);
 
   const handleSave = async () => {
+    if (!editor) return;
     if (!title.trim()) {
       setError("Title cannot be empty");
       return;
     }
+
+    const jsonContent = editor.getJSON();
 
     setSaving(true);
     setError("");
@@ -97,9 +132,12 @@ export default function EditNotePage() {
     try {
       await apiFetch(`/notes/${id}`, {
         method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify({
           title: title.trim(),
-          content: content.trim(),
+          content: jsonContent,
         }),
       });
 
@@ -144,7 +182,7 @@ export default function EditNotePage() {
         {loading ? (
           <p>Loading...</p>
         ) : (
-          <div>
+          <div className="w-full">
             {error && (
               <p className="text-red-500 text-sm mb-4 bg-red-50 p-3 rounded-lg">
                 {error}
@@ -160,7 +198,7 @@ export default function EditNotePage() {
                 setTitle(e.target.value);
               }}
             />
-            <textarea
+            {/* <textarea
               placeholder="Start writing..."
               value={content}
               onChange={(e) => {
@@ -169,7 +207,8 @@ export default function EditNotePage() {
               }}
               rows={20}
               className="w-full border rounded-lg px-4 py-2 mb-4"
-            ></textarea>
+            ></textarea> */}
+            <EditorContent editor={editor} />
           </div>
         )}
 
