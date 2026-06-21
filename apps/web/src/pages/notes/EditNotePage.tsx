@@ -11,18 +11,20 @@ import Collaboration from "@tiptap/extension-collaboration";
 
 export default function EditNotePage() {
   const navigate = useNavigate();
-  const { id } = useParams();
+  const { id } = useParams<{ id: string }>();
 
   const [title, setTitle] = useState("");
-  const [content, setContent] = useState("");
+  const [initialContent, setInitialContent] = useState("");
   const [saving, setSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved">(
     "idle",
   );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [lastEditedAt, setLastEditedAt] = useState(0);
   const hasEdited = useRef(false);
   const hasInitialized = useRef(false);
+  const saveStatusTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // create doc one (survives re-renders)
   const doc = useMemo(() => new Y.Doc(), []);
@@ -45,6 +47,10 @@ export default function EditNotePage() {
         class: "w-full border rounded-lg px-4 py-2 mb-4 min-h-[400px]",
       },
     },
+    onUpdate: () => {
+      hasEdited.current = true;
+      setLastEditedAt(Date.now());
+    },
     extensions: [
       StarterKit.configure({
         history: false,
@@ -61,7 +67,7 @@ export default function EditNotePage() {
       try {
         const data: Note = await apiFetch(`/notes/${id}`);
         setTitle(data.title);
-        setContent(data.content);
+        setInitialContent(data.content);
       } catch (err: unknown) {
         if (err instanceof Error) {
           setError(err.message); // surface the error
@@ -77,37 +83,39 @@ export default function EditNotePage() {
   useEffect(() => {
     if (!hasInitialized.current) {
       if (!editor) return;
-      if (!content) return;
+      if (loading) return;
 
-      editor.commands.setContent(content);
+      editor.commands.setContent(initialContent);
+      hasEdited.current = false;
       hasInitialized.current = true;
     }
-  }, [editor, content]);
+  }, [editor, loading, initialContent]);
 
   // debounce the save
   useEffect(() => {
     const timer = setTimeout(async () => {
       if (loading || !hasEdited.current || !title.trim() || !editor) return;
 
-      const jsonContent = editor.getJSON();
+      const htmlContent = editor.getHTML();
+      setError("");
 
       try {
         setSaveStatus("saving");
         await apiFetch(`/notes/${id}`, {
           method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-          },
           body: JSON.stringify({
             title: title.trim(),
-            content: jsonContent,
+            content: htmlContent,
           }),
         });
         setSaveStatus("saved");
-        setTimeout(() => {
+        if (saveStatusTimerRef.current)
+          clearTimeout(saveStatusTimerRef.current);
+        saveStatusTimerRef.current = setTimeout(() => {
           setSaveStatus("idle");
         }, 5000);
       } catch (err: unknown) {
+        setSaveStatus("idle");
         if (err instanceof Error) {
           setError(err.message);
         }
@@ -115,16 +123,22 @@ export default function EditNotePage() {
     }, 1000);
 
     return () => clearTimeout(timer);
-  }, [title, content, id, loading, editor]);
+  }, [title, lastEditedAt, id, loading, editor]);
+
+  useEffect(() => {
+    return () => {
+      if (saveStatusTimerRef.current) clearTimeout(saveStatusTimerRef.current);
+    };
+  }, []);
 
   const handleSave = async () => {
-    if (!editor) return;
+    if (!editor || !id) return;
     if (!title.trim()) {
       setError("Title cannot be empty");
       return;
     }
 
-    const jsonContent = editor.getJSON();
+    const htmlContent = editor.getHTML();
 
     setSaving(true);
     setError("");
@@ -132,12 +146,9 @@ export default function EditNotePage() {
     try {
       await apiFetch(`/notes/${id}`, {
         method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
         body: JSON.stringify({
           title: title.trim(),
-          content: jsonContent,
+          content: htmlContent,
         }),
       });
 
@@ -154,6 +165,8 @@ export default function EditNotePage() {
 
   const handleDelete = async () => {
     // TODO: replace with proper confirmation
+    if (!id) return;
+
     if (window.confirm("Delete note?")) {
       try {
         await apiFetch(`/notes/${id}`, {
@@ -198,16 +211,6 @@ export default function EditNotePage() {
                 setTitle(e.target.value);
               }}
             />
-            {/* <textarea
-              placeholder="Start writing..."
-              value={content}
-              onChange={(e) => {
-                hasEdited.current = true;
-                setContent(e.target.value);
-              }}
-              rows={20}
-              className="w-full border rounded-lg px-4 py-2 mb-4"
-            ></textarea> */}
             <EditorContent editor={editor} />
           </div>
         )}
