@@ -34,6 +34,11 @@ router.get("/:id", async (req: Request, res: Response) => {
     ? `owner_id.eq.${userId},share_token.eq.${token}`
     : `owner_id.eq${userId}`;
 
+  if (!userEmail) {
+    res.status(400).json({ error: "User email required for collaboration" });
+    return;
+  }
+
   // step 1: try owner or token access
   const { data, error } = await supabase
     .from("notes")
@@ -106,6 +111,7 @@ router.post("/", async (req: Request, res: Response) => {
   res.status(201).json(data);
 });
 
+// TODO: allow collborators to edit
 // PATCH /notes/:id - update a note
 router.patch("/:id", async (req: Request, res: Response) => {
   const { id } = req.params;
@@ -164,6 +170,7 @@ router.post("/:id/share", async (req: Request, res: Response) => {
     .from("notes")
     .select("share_token")
     .eq("id", id)
+    .eq("owner_id", req.user!.id)
     .single();
 
   // generate a random token for sharing
