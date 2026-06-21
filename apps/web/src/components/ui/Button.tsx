@@ -34,7 +34,7 @@ const Button = ({
   ...props
 }: ButtonProps) => {
   const baseClasses =
-    "inline-flex items-center justify-center rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors";
+    "inline-flex items-center justify-center rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors cursor-pointer";
 
   const variantClasses: Record<ButtonVariant, string> = {
     primary:
