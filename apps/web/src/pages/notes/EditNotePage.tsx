@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Button } from "../../components/ui/Button";
 import { apiFetch } from "../../lib/api";
 import type { Note } from "../../types/note";
 import * as Y from "yjs";
@@ -8,6 +7,8 @@ import { WebsocketProvider } from "y-websocket";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Collaboration from "@tiptap/extension-collaboration";
+import { Button } from "../../components/ui/Button";
+import { Modal } from "../../components/ui/Modal";
 
 export default function EditNotePage() {
   const navigate = useNavigate();
@@ -22,6 +23,7 @@ export default function EditNotePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [lastEditedAt, setLastEditedAt] = useState(0);
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const hasEdited = useRef(false);
   const hasInitialized = useRef(false);
   const saveStatusTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -191,9 +193,22 @@ export default function EditNotePage() {
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
       <div className="w-full max-w-md flex flex-col items-center p-8 bg-white rounded-xl shadow">
         <h1 className="text-2xl font-bold mb-6">Edit Note</h1>
-        <Button variant="outline" size="lg" fullWidth className="mb-2">
+        <Button
+          variant="outline"
+          size="lg"
+          fullWidth
+          className="mb-2"
+          onClick={() => setIsModalOpen(true)}
+        >
           Share
         </Button>
+        <Modal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          title={`Share ${title}`}
+        >
+          <p>Test Modal</p>
+        </Modal>
 
         {loading ? (
           <p>Loading...</p>
