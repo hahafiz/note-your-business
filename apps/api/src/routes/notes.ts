@@ -32,7 +32,7 @@ router.get("/:id", async (req: Request, res: Response) => {
   const userEmail = req.user!.email;
   const orCondition = token
     ? `owner_id.eq.${userId},share_token.eq.${token}`
-    : `owner_id.eq${userId}`;
+    : `owner_id.eq.${userId}`;
 
   if (!userEmail) {
     res.status(400).json({ error: "User email required for collaboration" });
@@ -111,11 +111,21 @@ router.post("/", async (req: Request, res: Response) => {
   res.status(201).json(data);
 });
 
-// TODO: allow collborators to edit
 // PATCH /notes/:id - update a note
 router.patch("/:id", async (req: Request, res: Response) => {
   const { id } = req.params;
   const { title, content } = req.body;
+  const { token } = req.query;
+  const userId = req.user!.id;
+  const userEmail = req.user!.email;
+  const orCondition = token
+    ? `owner_id.eq.${userId},share_token.eq.${token}`
+    : `owner_id.eq.${userId}`;
+
+  if (!userEmail) {
+    res.status(400).json({ error: "You don't have access to this note" });
+    return;
+  }
 
   if (!title?.trim()) {
     res.status(400).json({ error: "Title is required" });
@@ -126,9 +136,40 @@ router.patch("/:id", async (req: Request, res: Response) => {
     .from("notes")
     .update({ title, content, updated_at: new Date().toISOString() })
     .eq("id", id)
-    .eq("owner_id", req.user!.id) // ensure the note belongs to the logged-in user
+    .or(orCondition) // ensure the note belongs to the logged-in user
     .select()
     .single();
+
+  if (error?.code === "PGRST116") {
+    const { data: collabData } = await supabase
+      .from("note_collaborators")
+      .select("*")
+      .eq("note_id", id)
+      .eq("user_email", userEmail)
+      .single();
+
+    // not a collaborator
+    if (!collabData) {
+      res.status(404).json({ error: "Note not found" });
+      return;
+    }
+
+    // IS a collaborator - fetch w/o ownership check
+    const { data: sharedNote, error: sharedError } = await supabase
+      .from("notes")
+      .update({ title, content, updated_at: new Date().toISOString() })
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (sharedError) {
+      res.status(500).json({ error: sharedError.message });
+      return;
+    }
+
+    res.json(sharedNote);
+    return;
+  }
 
   if (error) {
     res.status(500).json({ error: error.message });
