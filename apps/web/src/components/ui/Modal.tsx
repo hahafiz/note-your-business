@@ -1,9 +1,11 @@
-import { useEffect, useRef } from "react";
 import { Button } from "../../components/ui/Button";
+
+type ModalPosition = "center" | "top" | "bottom" | "drawer-right";
 interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
   title?: string;
+  position?: ModalPosition;
   children: React.ReactNode;
 }
 
@@ -11,33 +13,45 @@ const Modal: React.FC<ModalProps> = ({
   isOpen,
   onClose,
   title,
+  position = "center",
   children,
 }: ModalProps) => {
-  const dialogRef = useRef<HTMLDialogElement | null>(null);
+  if (!isOpen) return null;
 
-  useEffect(() => {
-    const dialog = dialogRef.current;
-    if (!dialog) return;
-    if (isOpen) dialog.showModal();
-    else dialog.close();
-  }, [isOpen]);
+  const positionClasses: Record<ModalPosition, string> = {
+    center: "items-center justify-center",
+    top: "items-start justify-center pt-16",
+    bottom: "items-end justify-center",
+    "drawer-right": "items-stretch justify-end",
+  };
+
+  const cardClasses: Record<ModalPosition, string> = {
+    center: "rounded-lg max-w-lg w-full -m-4",
+    top: "rounded-lg max-w-lg w-full m4",
+    bottom: "rounded-t-2xl w-full max-w-xl",
+    "drawer-right": "h-full max-w-md w-full",
+  };
 
   return (
-    <dialog
-      ref={dialogRef}
-      onClose={onClose}
-      className="backdrop:bg-black/50 p-0 rounded-lg"
+    // backdrop overlay
+    <div
+      className={`fixed inset-0 z-50 flex bg-black/50 backdrop-blur-sm transition-opacity ${positionClasses[position]}`}
+      onClick={onClose}
     >
-      <div className="p-6">
-        <header className="flex justify-between items-center border-b pb-2">
-          <h2>{title || "Notification"}</h2>
-          <Button variant="primary" size="lg" onClick={onClose}>
-            Test btn
+      {/* modal content */}
+      <div
+        className={`bg-white p-6 shadow-xl transform transition-all ${cardClasses[position]}`}
+        onClick={(e) => e.stopPropagation()} // prevents closing when clicking inside
+      >
+        <header className="flex justify-between">
+          <h2 className="text-lg font-semibold">{title || "Notification"}</h2>
+          <Button variant="ghost" onClick={onClose}>
+            &#x2715;
           </Button>
         </header>
         <main>{children}</main>
       </div>
-    </dialog>
+    </div>
   );
 };
 

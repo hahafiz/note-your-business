@@ -8,7 +8,7 @@ import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Collaboration from "@tiptap/extension-collaboration";
 import { Button } from "../../components/ui/Button";
-import { Modal } from "../../components/ui/Modal";
+import ModalSharing from "../modal/ModalSharing";
 
 export default function EditNotePage() {
   const navigate = useNavigate();
@@ -202,13 +202,11 @@ export default function EditNotePage() {
         >
           Share
         </Button>
-        <Modal
+        <ModalSharing
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
           title={`Share ${title}`}
-        >
-          <p>Test Modal</p>
-        </Modal>
+        />
 
         {loading ? (
           <p>Loading...</p>
