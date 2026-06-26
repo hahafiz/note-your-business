@@ -189,6 +189,8 @@ export default function EditNotePage() {
     navigate("/dashboard");
   };
 
+  if (!id) return null;
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
       <div className="w-full max-w-md flex flex-col items-center p-8 bg-white rounded-xl shadow">
@@ -206,6 +208,7 @@ export default function EditNotePage() {
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
           title={`Share ${title}`}
+          id={id}
         />
 
         {loading ? (

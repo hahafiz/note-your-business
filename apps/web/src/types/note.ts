@@ -1,3 +1,4 @@
+// this are same as table 'notes' in supabase
 export interface Note {
   id: string;
   title: string;
@@ -12,4 +13,11 @@ export interface Note {
 export interface CreateNotePayload {
   title: string;
   content: string;
+}
+
+// this are same as table 'note_collaborators' in supabase
+export interface CollabList {
+  note_id: string;
+  user_email: string;
+  id: string;
 }
