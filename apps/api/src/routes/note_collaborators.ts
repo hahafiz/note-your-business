@@ -24,6 +24,21 @@ router.get("/:note_id", async (req: Request, res: Response) => {
   res.json(data);
 });
 
+// GET /note_collaborators - fetch all logged in collaborator's notes
+router.get("/", async (req: Request, res: Response) => {
+  const { data, error } = await supabase
+    .from("note_collaborators")
+    .select("note_id, notes(*)")
+    .eq("user_email", req.user!.email);
+
+  if (error) {
+    res.status(500).json({ error: error.message });
+    return;
+  }
+
+  res.json(data);
+});
+
 // POST /note_collaborators - add new collaborator email to note_id
 router.post("/:note_id", async (req: Request, res: Response) => {
   const { note_id } = req.params;

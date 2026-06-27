@@ -12,6 +12,7 @@ interface ModalSharing {
 }
 
 // TODO: send invitation to collaborator (email or link)
+// TODO: set timer for successful invite
 // TODO: remove collaborator
 
 export default function ModalSharing({

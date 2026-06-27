@@ -10,6 +10,7 @@ export default function DashboardPage() {
   const [notes, setNotes] = useState<Note[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [collabNotes, setCollabNotes] = useState<Note[]>([]);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -32,7 +33,22 @@ export default function DashboardPage() {
       }
     };
 
+    const fetchCollaboratorsNotes = async () => {
+      try {
+        const data = await apiFetch("/note_collaborators");
+        setCollabNotes(data.map((item) => item.notes));
+        setLoading(false);
+      } catch (err: unknown) {
+        if (err instanceof Error) {
+          setError(err.message);
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
     fetchNotes();
+    fetchCollaboratorsNotes();
   }, [user, navigate]);
 
   const handleNoteClick = (id: string) => {
@@ -97,6 +113,42 @@ export default function DashboardPage() {
               </li>
             ))}
           </ul>
+        )}
+
+        {(loading || error || collabNotes.length > 0) && (
+          <>
+            <h4 className="font-medium mb-6">Shared Notes</h4>
+            {loading ? (
+              <p className="text-gray-500 text-sm mb-4 bg-gray-50 p-3 rounded-lg">
+                Loading...
+              </p>
+            ) : error ? (
+              <p className="text-red-500 text-sm mb-4 bg-red-50 p-3 rounded-lg">
+                {error}
+              </p>
+            ) : collabNotes.length === 0 ? (
+              <p className="text-gray-500 text-sm mb-4 bg-gray-50 p-3 rounded-lg">
+                No notes shared
+              </p>
+            ) : (
+              <ul className="w-full mb-6">
+                {collabNotes.map((note) => (
+                  <li
+                    key={note.id}
+                    className="mb-4 pb-4 border-b border-gray-200 cursor-pointer flex justify-between items-baseline"
+                    onClick={() => {
+                      handleNoteClick(note.id);
+                    }}
+                  >
+                    <span className="font-medium">{note.title}</span>
+                    <span className="text-gray-400 text-sm">
+                      {formatDate(note.created_at)}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </>
         )}
 
         <Button variant="secondary" size="lg" fullWidth onClick={signOut}>
