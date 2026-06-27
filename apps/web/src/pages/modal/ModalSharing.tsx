@@ -11,6 +11,9 @@ interface ModalSharing {
   title?: string;
 }
 
+// TODO: send invitation to collaborator (email or link)
+// TODO: remove collaborator
+
 export default function ModalSharing({
   isOpen,
   onClose,
@@ -19,8 +22,12 @@ export default function ModalSharing({
 }: ModalSharing) {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
+  const [sharing, setSharing] = useState(false);
+  const [email, setEmail] = useState("");
 
   useEffect(() => {
+    if (!isOpen) return;
+
     const fetchCollabList = async () => {
       try {
         const list: CollabList[] = await apiFetch(`/note_collaborators/${id}`);
@@ -36,7 +43,32 @@ export default function ModalSharing({
     };
 
     fetchCollabList();
-  }, [id]);
+  }, [id, isOpen]);
+
+  const handleShare = async () => {
+    if (!email.trim()) {
+      setError("Please fill email address");
+      return;
+    }
+
+    setSharing(true);
+    setError("");
+
+    try {
+      await apiFetch(`/note_collaborators/${id}`, {
+        method: "POST",
+        body: JSON.stringify({
+          user_email: email,
+        }),
+      });
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message);
+      }
+    } finally {
+      setSharing(false);
+    }
+  };
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={`${title}`}>
@@ -45,9 +77,17 @@ export default function ModalSharing({
           type="email"
           placeholder="Enter email"
           className="w-full rounded-md border px-2"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
         />
-        <Button variant="primary" size="md" className="px-2">
-          Share
+        <Button
+          variant="primary"
+          size="md"
+          className="px-2"
+          disabled={sharing}
+          onClick={handleShare}
+        >
+          {sharing ? "Sharing..." : "Share"}
         </Button>
         <Button
           variant="secondary"
@@ -57,6 +97,16 @@ export default function ModalSharing({
           Copy Link
         </Button>
       </div>
+      {loading ? (
+        <p>Loading...</p>
+      ) : (
+        error && (
+          <p className="text-red-500 text-sm mb-4 bg-red-50 p-3 rounded-lg">
+            {error}
+          </p>
+        )
+      )}
+
       <div className="pt-2">
         <h6 className="text-sm font-medium text-gray-600 pb-2">
           Collaborator list
