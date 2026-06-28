@@ -36,7 +36,7 @@ export default function DashboardPage() {
     const fetchCollaboratorsNotes = async () => {
       try {
         const data = await apiFetch("/note_collaborators");
-        setCollabNotes(data.map((item) => item.notes));
+        setCollabNotes(data.map((item: { notes: Note }) => item.notes));
       } catch (err: unknown) {
         if (err instanceof Error) {
           setError(err.message);
