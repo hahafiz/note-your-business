@@ -1,10 +1,18 @@
+import { createServer } from "http";
 import { WebSocketServer } from "ws";
 import { setupWSConnection } from "y-websocket/bin/utils";
 
 const port = process.env.PORT ? parseInt(process.env.PORT) : 1234;
 
+const server = createServer((req, res) => {
+  if (req.url === "/healthz") {
+    res.writeHead(200);
+    res.end("ok");
+  }
+});
+
 // create the standard websocket server
-const wss = new WebSocketServer({ port });
+const wss = new WebSocketServer({ server });
 
 wss.on("connection", (ws, req) => {
   try {
@@ -20,4 +28,6 @@ wss.on("connection", (ws, req) => {
   }
 });
 
-console.log(`y-websocket server is running on port ${port}`);
+server.listen(port, () => {
+  console.log(`y-websocket server is running on port ${port}`);
+});
