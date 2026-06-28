@@ -8,7 +8,8 @@ import type { Note } from "../../types/note";
 export default function DashboardPage() {
   const { user, signOut } = useAuth();
   const [notes, setNotes] = useState<Note[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loadingNotes, setLoadingNotes] = useState(true);
+  const [loadingCollab, setLoadingCollab] = useState(true);
   const [error, setError] = useState("");
   const [collabNotes, setCollabNotes] = useState<Note[]>([]);
   const navigate = useNavigate();
@@ -23,13 +24,12 @@ export default function DashboardPage() {
       try {
         const data = (await apiFetch("/notes")) as Note[];
         setNotes(data);
-        setLoading(false);
       } catch (err: unknown) {
         if (err instanceof Error) {
           setError(err.message);
         }
       } finally {
-        setLoading(false);
+        setLoadingNotes(false);
       }
     };
 
@@ -37,13 +37,12 @@ export default function DashboardPage() {
       try {
         const data = await apiFetch("/note_collaborators");
         setCollabNotes(data.map((item) => item.notes));
-        setLoading(false);
       } catch (err: unknown) {
         if (err instanceof Error) {
           setError(err.message);
         }
       } finally {
-        setLoading(false);
+        setLoadingCollab(false);
       }
     };
 
@@ -84,7 +83,7 @@ export default function DashboardPage() {
           New Note
         </Button>
 
-        {loading ? (
+        {loadingNotes ? (
           <p className="text-gray-500 text-sm mb-4 bg-gray-50 p-3 rounded-lg">
             Loading...
           </p>
@@ -115,10 +114,10 @@ export default function DashboardPage() {
           </ul>
         )}
 
-        {(loading || error || collabNotes.length > 0) && (
+        {(loadingCollab || error || collabNotes.length > 0) && (
           <>
             <h4 className="font-medium mb-6">Shared Notes</h4>
-            {loading ? (
+            {loadingCollab ? (
               <p className="text-gray-500 text-sm mb-4 bg-gray-50 p-3 rounded-lg">
                 Loading...
               </p>

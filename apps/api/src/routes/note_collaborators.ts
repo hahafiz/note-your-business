@@ -63,4 +63,40 @@ router.post("/:note_id", async (req: Request, res: Response) => {
   res.status(201).json(data);
 });
 
+// DELETE /note_collaborators/:note_id - delete access of a collaborator from note_id
+router.delete("/:note_id", async (req: Request, res: Response) => {
+  const { note_id } = req.params;
+  const { user_email } = req.body;
+
+  const { data: note, error: noteError } = await supabase
+    .from("notes")
+    .select("owner_id")
+    .eq("id", note_id)
+    .single();
+
+  console.log("note:", note);
+  console.log("noteError:", noteError);
+  console.log("req.user.id:", req.user!.id);
+
+  if (note?.owner_id !== req.user!.id) {
+    res
+      .status(403)
+      .json({ error: "Only the note owner can remove collaborators" });
+    return;
+  }
+
+  const { error } = await supabase
+    .from("note_collaborators")
+    .delete()
+    .eq("note_id", note_id)
+    .eq("user_email", user_email);
+
+  if (error) {
+    res.status(500).json({ error: error.message });
+    return;
+  }
+
+  res.status(204).send();
+});
+
 export default router;

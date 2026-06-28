@@ -11,8 +11,6 @@ interface ModalSharing {
   title?: string;
 }
 
-// TODO: send invitation to collaborator (email or link)
-// TODO: set timer for successful invite
 // TODO: remove collaborator
 
 export default function ModalSharing({
@@ -24,7 +22,9 @@ export default function ModalSharing({
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
   const [sharing, setSharing] = useState(false);
+  const [success, setSuccess] = useState("");
   const [email, setEmail] = useState("");
+  const [collabList, setCollabList] = useState<CollabList[]>([]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -32,8 +32,7 @@ export default function ModalSharing({
     const fetchCollabList = async () => {
       try {
         const list: CollabList[] = await apiFetch(`/note_collaborators/${id}`);
-        // does this apiFetch will return an array if there are multiple values ?
-        console.log("list: ", list);
+        setCollabList(list);
       } catch (err: unknown) {
         if (err instanceof Error) {
           setError(err.message);
@@ -62,12 +61,34 @@ export default function ModalSharing({
           user_email: email,
         }),
       });
+      const list: CollabList[] = await apiFetch(`/note_collaborators/${id}`);
+      setCollabList(list);
+      setEmail("");
+      setSuccess("Collaborator added!");
+      setTimeout(() => setSuccess(""), 3000);
     } catch (err: unknown) {
       if (err instanceof Error) {
         setError(err.message);
       }
     } finally {
       setSharing(false);
+    }
+  };
+
+  const handleRemoveCollab = async (user_email: string) => {
+    setError("");
+    try {
+      await apiFetch(`/note_collaborators/${id}`, {
+        method: "DELETE",
+        body: JSON.stringify({ user_email }),
+      });
+
+      const list: CollabList[] = await apiFetch(`/note_collaborators/${id}`);
+      setCollabList(list);
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message);
+      }
     }
   };
 
@@ -90,32 +111,39 @@ export default function ModalSharing({
         >
           {sharing ? "Sharing..." : "Share"}
         </Button>
-        <Button
-          variant="secondary"
-          size="md"
-          className="px-2 whitespace-nowrap"
-        >
-          Copy Link
-        </Button>
       </div>
-      {loading ? (
-        <p>Loading...</p>
-      ) : (
-        error && (
-          <p className="text-red-500 text-sm mb-4 bg-red-50 p-3 rounded-lg">
-            {error}
-          </p>
-        )
+      {loading && <p>Loading</p>}
+      {success && (
+        <p className="text-green-600 text-sm mb-4 bg-green-50 p-3 rounded-lg">
+          {success}
+        </p>
+      )}
+      {error && (
+        <p className="text-red-500 text-sm mb-4 bg-red-50 p-3 rounded-lg">
+          {error}
+        </p>
       )}
 
-      <div className="pt-2">
+      <div className="pt-4">
         <h6 className="text-sm font-medium text-gray-600 pb-2">
           Collaborator list
         </h6>
-        <ul>
-          <li>test@email.com</li>
-          <li>test@email.com</li>
-          <li>test@email.com</li>
+        <ul className="w-full mb-6">
+          {collabList.map((email) => (
+            <li
+              key={email.id}
+              className="mb-2 border-gray-200 cursor-pointer flex justify-between items-baseline"
+            >
+              {email.user_email}
+              <Button
+                variant="ghost"
+                className="text-red-500"
+                onClick={() => handleRemoveCollab(email.user_email)}
+              >
+                Remove
+              </Button>
+            </li>
+          ))}
         </ul>
       </div>
     </Modal>
