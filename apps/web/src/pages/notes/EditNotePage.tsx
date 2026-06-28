@@ -35,7 +35,11 @@ export default function EditNotePage() {
   useEffect(() => {
     if (!id) return;
 
-    const wsProvider = new WebsocketProvider("ws://localhost:1234", id, doc);
+    const wsProvider = new WebsocketProvider(
+      import.meta.env.VITE_WS_URL || "ws://localhost:1234",
+      id,
+      doc,
+    );
 
     // cleanup when unmounts
     return () => {
