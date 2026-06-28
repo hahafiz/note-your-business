@@ -14,6 +14,9 @@ app.use(express.json());
 app.get("/health", (req: Request, res: Response) => {
   res.json({ status: "API is running..." });
 });
+app.get("/healthz", (req, res) => {
+  res.sendStatus(200);
+});
 app.use("/notes", notesRouter);
 app.use("/note_collaborators", noteCollaboratorsRouter);
 
