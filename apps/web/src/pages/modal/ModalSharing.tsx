@@ -11,8 +11,6 @@ interface ModalSharing {
   title?: string;
 }
 
-// TODO: remove collaborator
-
 export default function ModalSharing({
   isOpen,
   onClose,
