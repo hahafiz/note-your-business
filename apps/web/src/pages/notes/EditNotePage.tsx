@@ -48,6 +48,7 @@ export default function EditNotePage() {
   }, [id, doc]);
 
   const editor = useEditor({
+    shouldRerenderOnTransaction: true,
     editorProps: {
       attributes: {
         class: "w-full border rounded-lg px-4 py-2 mb-4 min-h-[400px]",
@@ -59,7 +60,7 @@ export default function EditNotePage() {
     },
     extensions: [
       StarterKit.configure({
-        history: false,
+        undoRedo: false,
       }),
       Collaboration.configure({ document: doc }),
     ],
