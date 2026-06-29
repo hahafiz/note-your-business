@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "../../components/ui/Button";
 import { useAuth } from "../../hooks/useAuth";
 
@@ -11,6 +11,9 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  const [searchParams] = useSearchParams();
+  const justRegistered = searchParams.get("registered") === "true";
 
   const handleSubmit = async () => {
     setError("");
@@ -40,6 +43,12 @@ export default function LoginPage() {
         {error && (
           <p className="text-red-500 text-sm mb-4 bg-red-50 p-3 rounded-lg">
             {error}
+          </p>
+        )}
+
+        {justRegistered && (
+          <p className="text-gray-800 text-sm mb-4 bg-gray-100 p-3 rounded-lg">
+            Check your email for verification before logging in.
           </p>
         )}
 
