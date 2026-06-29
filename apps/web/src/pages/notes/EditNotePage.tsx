@@ -7,6 +7,7 @@ import { WebsocketProvider } from "y-websocket";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Collaboration from "@tiptap/extension-collaboration";
+import { TaskItem, TaskList } from "@tiptap/extension-list";
 import { Button } from "../../components/ui/Button";
 import ModalSharing from "../modal/ModalSharing";
 
@@ -63,6 +64,10 @@ export default function EditNotePage() {
         undoRedo: false,
       }),
       Collaboration.configure({ document: doc }),
+      TaskList,
+      TaskItem.configure({
+        nested: true,
+      }),
     ],
   });
 
@@ -235,6 +240,45 @@ export default function EditNotePage() {
                 setTitle(e.target.value);
               }}
             />
+            <div>
+              <div>
+                <Button
+                  variant="ghost"
+                  className={editor.isActive("taskList") ? "is-active" : ""}
+                  onClick={() => editor.chain().toggleTaskList().run()}
+                >
+                  Toggle task list
+                </Button>
+                <Button
+                  variant="ghost"
+                  disabled={!editor.can().splitListItem("taskItem")}
+                  onClick={() =>
+                    editor.chain().focus().splitListItem("taskItem").run()
+                  }
+                >
+                  Split task item
+                </Button>
+                <Button
+                  variant="ghost"
+                  disabled={!editor.can().sinkListItem("taskItem")}
+                  onClick={() =>
+                    editor.chain().focus().sinkListItem("taskItem").run()
+                  }
+                >
+                  Sink list item
+                </Button>
+                <Button
+                  variant="ghost"
+                  disabled={!editor.can().liftListItem("taskItem")}
+                  onClick={() =>
+                    editor.chain().focus().liftListItem("taskItem").run()
+                  }
+                >
+                  Lift list item
+                </Button>
+              </div>
+            </div>
+
             <EditorContent editor={editor} />
           </div>
         )}
