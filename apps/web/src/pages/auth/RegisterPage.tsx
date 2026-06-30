@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "../../components/ui/Button";
 import { useAuth } from "../../hooks/useAuth";
+import HCaptcha from "@hcaptcha/react-hcaptcha";
 
 export default function RegisterPage() {
   const { signUp } = useAuth();
@@ -11,13 +12,20 @@ export default function RegisterPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const captchaRef = useRef<HCaptcha>(null);
 
   const handleSubmit = async () => {
+    if (!captchaToken) {
+      setError("Please complete the captcha");
+      return;
+    }
+
     setError("");
     setLoading(true);
 
     try {
-      await signUp(email, password);
+      await signUp(email, password, captchaToken);
       // supabase sends a confirmation email by default
       // redirect to login page with success message
       navigate("/login?registered=true");
@@ -25,6 +33,7 @@ export default function RegisterPage() {
       if (err instanceof Error) {
         setError(err.message);
       }
+      setCaptchaToken(null);
     } finally {
       setLoading(false);
     }
@@ -61,12 +70,19 @@ export default function RegisterPage() {
           className="w-full border rounded-lg px-4 py-2 mb-4"
         />
 
+        <HCaptcha
+          sitekey={import.meta.env.VITE_HCAPTCHA_SITE_KEY}
+          onVerify={(token) => setCaptchaToken(token)}
+          ref={captchaRef}
+        />
+
         <Button
           variant="primary"
           size="lg"
           fullWidth
           onClick={handleSubmit}
           disabled={loading}
+          className="mt-6"
         >
           {loading ? "Creating account..." : "Register"}
         </Button>

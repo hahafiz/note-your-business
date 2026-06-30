@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "../../components/ui/Button";
 import { useAuth } from "../../hooks/useAuth";
+import HCaptcha from "@hcaptcha/react-hcaptcha";
 
 export default function LoginPage() {
   const { signIn } = useAuth();
@@ -11,21 +12,29 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const captchaRef = useRef<HCaptcha>(null);
 
   const [searchParams] = useSearchParams();
   const justRegistered = searchParams.get("registered") === "true";
 
   const handleSubmit = async () => {
+    if (!captchaToken) {
+      setError("Please complete the captcha");
+      return;
+    }
+
     setError("");
     setLoading(true);
 
     try {
-      await signIn(email, password);
+      await signIn(email, password, captchaToken);
       navigate("/dashboard");
     } catch (err: unknown) {
       if (err instanceof Error) {
         setError(err.message);
       }
+      setCaptchaToken(null);
     } finally {
       setLoading(false);
     }
@@ -68,12 +77,19 @@ export default function LoginPage() {
           className="w-full border rounded-lg px-4 py-2 mb-4"
         />
 
+        <HCaptcha
+          sitekey={import.meta.env.VITE_HCAPTCHA_SITE_KEY}
+          onVerify={(token) => setCaptchaToken(token)}
+          ref={captchaRef}
+        />
+
         <Button
           variant="primary"
           size="lg"
           fullWidth
           onClick={handleSubmit}
           disabled={loading}
+          className="mt-6"
         >
           {loading ? "Logging in..." : "Log in"}
         </Button>
