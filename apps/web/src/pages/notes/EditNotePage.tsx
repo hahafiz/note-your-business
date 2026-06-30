@@ -69,6 +69,12 @@ export default function EditNotePage() {
         nested: true,
       }),
     ],
+    content: `
+        <ul data-type="taskList">
+          <li data-type="taskItem" data-checked="true">A list item</li>
+          <li data-type="taskItem" data-checked="false">And another one</li>
+        </ul>
+      `,
   });
 
   // fetch the note
@@ -243,14 +249,14 @@ export default function EditNotePage() {
             <div>
               <div>
                 <Button
-                  variant="ghost"
+                  variant="secondary"
                   className={editor.isActive("taskList") ? "is-active" : ""}
                   onClick={() => editor.chain().toggleTaskList().run()}
                 >
                   Toggle task list
                 </Button>
                 <Button
-                  variant="ghost"
+                  variant="secondary"
                   disabled={!editor.can().splitListItem("taskItem")}
                   onClick={() =>
                     editor.chain().focus().splitListItem("taskItem").run()
@@ -259,7 +265,7 @@ export default function EditNotePage() {
                   Split task item
                 </Button>
                 <Button
-                  variant="ghost"
+                  variant="secondary"
                   disabled={!editor.can().sinkListItem("taskItem")}
                   onClick={() =>
                     editor.chain().focus().sinkListItem("taskItem").run()
@@ -268,7 +274,7 @@ export default function EditNotePage() {
                   Sink list item
                 </Button>
                 <Button
-                  variant="ghost"
+                  variant="secondary"
                   disabled={!editor.can().liftListItem("taskItem")}
                   onClick={() =>
                     editor.chain().focus().liftListItem("taskItem").run()
