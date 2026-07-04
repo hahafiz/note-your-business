@@ -53,7 +53,7 @@ export default function EditNotePage() {
     editorProps: {
       attributes: {
         class:
-          "w-full border rounded-lg px-4 py-2 my-4 max-h-[48vh] overflow-scroll",
+          "w-full border rounded-lg px-4 py-2 my-4 max-h-[50vh] overflow-scroll",
       },
     },
     onUpdate: () => {
@@ -210,7 +210,7 @@ export default function EditNotePage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="w-full max-w-md h-screen sm:h-auto lg:h-fit flex flex-col items-center p-8 bg-white rounded-xl shadow">
+      <div className="w-full max-w-md h-screen sm:h-auto lg:h-fit flex flex-col items-center p-4 bg-white rounded-xl shadow">
         <h1 className="text-2xl font-bold mb-6">Edit Note</h1>
         <Button
           variant="outline"
