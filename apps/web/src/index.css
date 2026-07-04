@@ -7,13 +7,13 @@
 
 .ProseMirror ul[data-type="taskList"] > li {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 0.5rem;
 }
 
 .ProseMirror ul[data-type="taskList"] > li > label {
   flex: 0 0 auto;
-  margin-top: 0.25rem;
+  margin-top: 0.2rem;
   user-select: none;
 }
 
