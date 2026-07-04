@@ -52,7 +52,7 @@ export default function EditNotePage() {
     shouldRerenderOnTransaction: true,
     editorProps: {
       attributes: {
-        class: "w-full border rounded-lg px-4 py-2 mb-4 min-h-[400px]",
+        class: "w-full border rounded-lg px-4 py-2 my-4 min-h-[400px]",
       },
     },
     onUpdate: () => {
@@ -247,7 +247,7 @@ export default function EditNotePage() {
               }}
             />
             <div>
-              <div>
+              <div className="flex gap-1 flex-wrap">
                 <Button
                   variant="secondary"
                   className={editor.isActive("taskList") ? "is-active" : ""}
@@ -289,11 +289,8 @@ export default function EditNotePage() {
           </div>
         )}
 
-        {saveStatus === "saving" && (
-          <span className="text-xs text-gray-400">Saving...</span>
-        )}
         {saveStatus === "saved" && (
-          <span className="text-xs text-green-600 mb-4 p-2 rounded bg-green-100">
+          <span className="absolute bottom-60 text-xs text-green-600 mb-4 p-2 rounded bg-green-100">
             Saved
           </span>
         )}
@@ -303,10 +300,14 @@ export default function EditNotePage() {
           size="lg"
           fullWidth
           className="mb-2"
-          disabled={saving}
+          disabled={saving || saveStatus === "saving"}
           onClick={handleSave}
         >
-          {saving ? "Saving..." : "Save"}
+          {saving || saveStatus === "saving"
+            ? "Saving..."
+            : saveStatus === "saved"
+              ? "Saved"
+              : "Save"}
         </Button>
         <Button
           variant="danger"
