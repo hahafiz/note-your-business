@@ -10,14 +10,17 @@ import { Button } from "../../components/ui/Button";
 import ModalSharing from "../modal/ModalSharing";
 import { useYjsProvider } from "../../hooks/useYjsProvider";
 import { useAwarenessPresence } from "../../hooks/useAwarenessPresence";
+import { useAuth } from "../../hooks/useAuth";
 
 export default function EditNotePage() {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
+  const { user } = useAuth();
+  const currentUser = user?.email ? { name: user.email } : null;
 
   // extract shared raw Yjs sync and presence logic
   const { doc, provider } = useYjsProvider(id);
-  const { activeUsers } = useAwarenessPresence(provider);
+  const { activeUsers } = useAwarenessPresence(provider, user?.email);
 
   const [title, setTitle] = useState("");
   const [initialContent, setInitialContent] = useState("");
@@ -194,7 +197,6 @@ export default function EditNotePage() {
   };
 
   if (!id) return null;
-
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
       <div className="w-full max-w-md h-screen sm:h-auto lg:h-fit flex flex-col items-center p-4 bg-white rounded-xl shadow">

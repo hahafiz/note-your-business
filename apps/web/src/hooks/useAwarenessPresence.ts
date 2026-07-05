@@ -7,17 +7,28 @@ export interface PresenceUser {
   color?: string;
 }
 
-export function useAwarenessPresence(provider: WebsocketProvider | null) {
+export interface CurrentUser {
+  name: string;
+}
+
+export function useAwarenessPresence(
+  provider: WebsocketProvider | null,
+  currentUser: string | null | undefined,
+) {
   const [activeUsers, setActiveUsers] = useState<PresenceUser[]>([]);
 
   useEffect(() => {
-    if (!provider) return;
+    if (!provider || !currentUser) return;
 
     const awareness = provider.awareness;
 
+    const randomHue = Math.floor(Math.random() * 360);
+    const darkColor = `hsl(${randomHue}, 75%, 35%)`;
+
+    // TODO: SHOW LIVE CURSOR
     awareness.setLocalStateField("user", {
-      name: `User ${awareness.clientID.toString().slice(0, 4)}`,
-      color: "#" + Math.floor(Math.random() * 16777215).toString(16),
+      name: currentUser.substring(0, 8) + "...",
+      color: darkColor,
     });
 
     const handleAwarenessChange = () => {
@@ -43,7 +54,7 @@ export function useAwarenessPresence(provider: WebsocketProvider | null) {
     return () => {
       awareness.off("change", handleAwarenessChange);
     };
-  }, [provider]);
+  }, [provider, currentUser]);
 
   return { activeUsers };
 }
