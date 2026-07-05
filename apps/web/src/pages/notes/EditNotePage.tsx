@@ -1,19 +1,23 @@
-import { useState, useEffect, useRef, useMemo } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { apiFetch } from "../../lib/api";
 import type { Note } from "../../types/note";
-import * as Y from "yjs";
-import { WebsocketProvider } from "y-websocket";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Collaboration from "@tiptap/extension-collaboration";
 import { TaskItem, TaskList } from "@tiptap/extension-list";
 import { Button } from "../../components/ui/Button";
 import ModalSharing from "../modal/ModalSharing";
+import { useYjsProvider } from "../../hooks/useYjsProvider";
+import { useAwarenessPresence } from "../../hooks/useAwarenessPresence";
 
 export default function EditNotePage() {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
+
+  // extract shared raw Yjs sync and presence logic
+  const { doc, provider } = useYjsProvider(id);
+  const { activeUsers } = useAwarenessPresence(provider);
 
   const [title, setTitle] = useState("");
   const [initialContent, setInitialContent] = useState("");
@@ -25,28 +29,10 @@ export default function EditNotePage() {
   const [error, setError] = useState("");
   const [lastEditedAt, setLastEditedAt] = useState(0);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+
   const hasEdited = useRef(false);
   const hasInitialized = useRef(false);
   const saveStatusTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  // create doc one (survives re-renders)
-  const doc = useMemo(() => new Y.Doc(), []);
-
-  // create provider inside useEffect, so cleanup can run on unmount
-  useEffect(() => {
-    if (!id) return;
-
-    const wsProvider = new WebsocketProvider(
-      import.meta.env.VITE_WS_URL || "ws://localhost:1234",
-      id,
-      doc,
-    );
-
-    // cleanup when unmounts
-    return () => {
-      wsProvider.disconnect();
-    };
-  }, [id, doc]);
 
   const editor = useEditor({
     shouldRerenderOnTransaction: true,
@@ -78,7 +64,7 @@ export default function EditNotePage() {
       `,
   });
 
-  // fetch the note
+  // fetch initial note document
   useEffect(() => {
     if (!id) return;
 
@@ -99,6 +85,7 @@ export default function EditNotePage() {
     fetchNote();
   }, [id]);
 
+  // load backend content into the editor context once ready
   useEffect(() => {
     if (!hasInitialized.current) {
       if (!editor) return;
@@ -110,7 +97,7 @@ export default function EditNotePage() {
     }
   }, [editor, loading, initialContent]);
 
-  // debounce the save
+  // debounce the auto-save
   useEffect(() => {
     const timer = setTimeout(async () => {
       if (loading || !hasEdited.current || !title.trim() || !editor) return;
@@ -212,6 +199,22 @@ export default function EditNotePage() {
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
       <div className="w-full max-w-md h-screen sm:h-auto lg:h-fit flex flex-col items-center p-4 bg-white rounded-xl shadow">
         <h1 className="text-2xl font-bold mb-6">Edit Note</h1>
+
+        {activeUsers.length > 1 && (
+          <div className="flex gap-1 mb-4 items-center self-start text-xs text-gray-500">
+            <span className="font-semibold">Active editors:</span>
+            {activeUsers.map((user) => (
+              <span
+                key={user.clientId}
+                className="px-2 py-0.5 rounded-full border text-white"
+                style={{ backgroundColor: user.color || "#ccc" }}
+              >
+                {user.name}
+              </span>
+            ))}
+          </div>
+        )}
+
         <Button
           variant="outline"
           size="lg"
