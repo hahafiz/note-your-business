@@ -16,7 +16,6 @@ export default function EditNotePage() {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
-  const currentUser = user?.email ? { name: user.email } : null;
 
   // extract shared raw Yjs sync and presence logic
   const { doc, provider } = useYjsProvider(id);
