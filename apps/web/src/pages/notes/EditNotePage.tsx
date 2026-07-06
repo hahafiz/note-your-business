@@ -16,7 +16,6 @@ export default function EditNotePage() {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
-  const currentUser = user?.email ? { name: user.email } : null;
 
   // extract shared raw Yjs sync and presence logic
   const { doc, provider } = useYjsProvider(id);
@@ -42,7 +41,7 @@ export default function EditNotePage() {
     editorProps: {
       attributes: {
         class:
-          "w-full border rounded-lg px-4 py-2 my-4 max-h-[50vh] overflow-scroll",
+          "w-full border rounded-lg px-4 py-2 my-4 h-[50vh] overflow-scroll",
       },
     },
     onUpdate: () => {
