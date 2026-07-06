@@ -41,7 +41,7 @@ export default function EditNotePage() {
     editorProps: {
       attributes: {
         class:
-          "w-full border rounded-lg px-4 py-2 my-4 max-h-[50vh] overflow-scroll",
+          "w-full border rounded-lg px-4 py-2 my-4 h-[50vh] overflow-scroll",
       },
     },
     onUpdate: () => {
