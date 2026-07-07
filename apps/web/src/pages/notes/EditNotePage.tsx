@@ -37,35 +37,50 @@ export default function EditNotePage() {
   const hasInitialized = useRef(false);
   const saveStatusTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const editor = useEditor({
-    shouldRerenderOnTransaction: true,
-    editorProps: {
-      attributes: {
-        class:
-          "w-full border rounded-lg px-4 py-2 my-4 h-[50vh] overflow-scroll",
+  const editor = useEditor(
+    {
+      shouldRerenderOnTransaction: true,
+      editorProps: {
+        attributes: {
+          class:
+            "w-full border rounded-lg px-4 py-2 my-4 h-[50vh] overflow-scroll",
+        },
       },
-    },
-    onUpdate: () => {
-      hasEdited.current = true;
-      setLastEditedAt(Date.now());
-    },
-    extensions: [
-      StarterKit.configure({
-        undoRedo: false,
-      }),
-      Collaboration.configure({ document: doc }),
-      TaskList,
-      TaskItem.configure({
-        nested: true,
-      }),
-    ],
-    content: `
+      onUpdate: () => {
+        hasEdited.current = true;
+        setLastEditedAt(Date.now());
+      },
+      extensions: [
+        StarterKit.configure({
+          undoRedo: false,
+        }),
+        Collaboration.configure({ document: doc }),
+        ...(provider
+          ? [
+              CollaborationCaret.configure({
+                provider,
+                user: {
+                  name: "Test user",
+                  color: "#f783ac",
+                },
+              }),
+            ]
+          : []),
+
+        TaskList,
+        TaskItem.configure({
+          nested: true,
+        }),
+      ],
+      content: `
         <ul data-type="taskList">
           <li data-type="taskItem" data-checked="true">A list item</li>
           <li data-type="taskItem" data-checked="false">And another one</li>
         </ul>
       `,
-  });
+    },
+    [provider],
+  );
 
   // fetch initial note document
   useEffect(() => {
