@@ -7,7 +7,7 @@
 
 .ProseMirror ul[data-type="taskList"] > li {
   display: flex;
-  align-items: flex-start;
+  align-items: baseline;
   gap: 0.5rem;
 }
 
