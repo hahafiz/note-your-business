@@ -5,6 +5,7 @@ import type { Note } from "../../types/note";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Collaboration from "@tiptap/extension-collaboration";
+import CollaborationCaret from "@tiptap/extension-collaboration-caret";
 import { TaskItem, TaskList } from "@tiptap/extension-list";
 import { Button } from "../../components/ui/Button";
 import ModalSharing from "../modal/ModalSharing";
@@ -196,6 +197,7 @@ export default function EditNotePage() {
   };
 
   if (!id) return null;
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
       <div className="w-full max-w-md h-screen sm:h-auto lg:h-fit flex flex-col items-center p-4 bg-white rounded-xl shadow">
