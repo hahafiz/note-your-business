@@ -37,6 +37,13 @@ export default function EditNotePage() {
   const hasInitialized = useRef(false);
   const saveStatusTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  const userName = user?.email
+    ? `${user.email.substring(0, 8)}...`
+    : "Anonymous";
+  const [userColor] = useState(
+    () => `hsl(${Math.floor(Math.random() * 360)}, 75%, 35%)`,
+  );
+
   const editor = useEditor(
     {
       shouldRerenderOnTransaction: true,
@@ -60,13 +67,12 @@ export default function EditNotePage() {
               CollaborationCaret.configure({
                 provider,
                 user: {
-                  name: "Test user",
-                  color: "#f783ac",
+                  name: userName,
+                  color: userColor,
                 },
               }),
             ]
           : []),
-
         TaskList,
         TaskItem.configure({
           nested: true,
@@ -307,7 +313,7 @@ export default function EditNotePage() {
               </div>
             </div>
 
-            <EditorContent editor={editor} />
+            {provider && user?.email && <EditorContent editor={editor} />}
           </div>
         )}
 
