@@ -22,15 +22,6 @@ export function useAwarenessPresence(
 
     const awareness = provider.awareness;
 
-    const randomHue = Math.floor(Math.random() * 360);
-    const darkColor = `hsl(${randomHue}, 75%, 35%)`;
-
-    // TODO: SHOW LIVE CURSOR
-    awareness.setLocalStateField("user", {
-      name: currentUser.substring(0, 8) + "...",
-      color: darkColor,
-    });
-
     const handleAwarenessChange = () => {
       const states = awareness.getStates();
       const users: PresenceUser[] = [];
