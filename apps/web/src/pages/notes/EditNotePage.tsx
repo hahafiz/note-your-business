@@ -5,6 +5,7 @@ import type { Note } from "../../types/note";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Collaboration from "@tiptap/extension-collaboration";
+import CollaborationCaret from "@tiptap/extension-collaboration-caret";
 import { TaskItem, TaskList } from "@tiptap/extension-list";
 import { Button } from "../../components/ui/Button";
 import ModalSharing from "../modal/ModalSharing";
@@ -36,35 +37,56 @@ export default function EditNotePage() {
   const hasInitialized = useRef(false);
   const saveStatusTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const editor = useEditor({
-    shouldRerenderOnTransaction: true,
-    editorProps: {
-      attributes: {
-        class:
-          "w-full border rounded-lg px-4 py-2 my-4 h-[50vh] overflow-scroll",
+  const userName = user?.email
+    ? `${user.email.substring(0, 8)}...`
+    : "Anonymous";
+  const [userColor] = useState(
+    () => `hsl(${Math.floor(Math.random() * 360)}, 75%, 35%)`,
+  );
+
+  const editor = useEditor(
+    {
+      shouldRerenderOnTransaction: true,
+      editorProps: {
+        attributes: {
+          class:
+            "w-full border rounded-lg px-4 py-2 my-4 h-[50vh] overflow-scroll",
+        },
       },
-    },
-    onUpdate: () => {
-      hasEdited.current = true;
-      setLastEditedAt(Date.now());
-    },
-    extensions: [
-      StarterKit.configure({
-        undoRedo: false,
-      }),
-      Collaboration.configure({ document: doc }),
-      TaskList,
-      TaskItem.configure({
-        nested: true,
-      }),
-    ],
-    content: `
+      onUpdate: () => {
+        hasEdited.current = true;
+        setLastEditedAt(Date.now());
+      },
+      extensions: [
+        StarterKit.configure({
+          undoRedo: false,
+        }),
+        Collaboration.configure({ document: doc }),
+        ...(provider
+          ? [
+              CollaborationCaret.configure({
+                provider,
+                user: {
+                  name: userName,
+                  color: userColor,
+                },
+              }),
+            ]
+          : []),
+        TaskList,
+        TaskItem.configure({
+          nested: true,
+        }),
+      ],
+      content: `
         <ul data-type="taskList">
           <li data-type="taskItem" data-checked="true">A list item</li>
           <li data-type="taskItem" data-checked="false">And another one</li>
         </ul>
       `,
-  });
+    },
+    [provider],
+  );
 
   // fetch initial note document
   useEffect(() => {
@@ -196,6 +218,7 @@ export default function EditNotePage() {
   };
 
   if (!id) return null;
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
       <div className="w-full max-w-md h-screen sm:h-auto lg:h-fit flex flex-col items-center p-4 bg-white rounded-xl shadow">
@@ -290,7 +313,7 @@ export default function EditNotePage() {
               </div>
             </div>
 
-            <EditorContent editor={editor} />
+            {provider && user?.email && <EditorContent editor={editor} />}
           </div>
         )}
 
